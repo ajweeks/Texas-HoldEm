@@ -76,10 +76,15 @@ var Player = (function () {
         this.ai = ai;
         this.balance = balance;
         this.cards = new Array(0);
+        for (var s = 0; s < Card.SUITS.length; s++) {
+            for (var v = 0; v < Card.VALUES.length; v++) {
+                this.cards.push(new Card(s, v));
+            }
+        }
     }
     Player.prototype.render = function () {
         for (var c in this.cards) {
-            this.cards[c].render(c * 50, 150);
+            this.cards[c].render((c % 13) * 55 + 120, Math.floor(c / 13) * 80 + 150, !this.ai);
         }
     };
     return Player;
@@ -127,12 +132,20 @@ var Card = (function () {
         return this.value + " of " + this.suit + "s";
     };
     Card.prototype.render = function (x, y, front) {
-        if (front)
-            Main.context.drawImage(Images.card_back, x, y);
-        else
-            Main.context.drawImage(Images.card_back, x, y);
-        Main.context.fillStyle = "#000";
-        Main.context.fillText(Card.SUITS[this.suit].charAt(0) + " " + this.value, x, y);
+        if (front) {
+            Main.context.drawImage(Images.card, 50, 0, 50, 70, x, y, 50, 70);
+            Main.context.drawImage(Images.alphabet, (this.value) * 15, (this.suit % 2) * 15, 15, 15, x + 3, y + 3, 15, 15);
+            Main.context.drawImage(Images.suits, (this.suit) * 17, 0, 17, 17, x + 29, y + 3, 17, 17);
+            Main.context.save();
+            Main.context.translate(x + 25, y + 35);
+            Main.context.rotate(Math.PI);
+            Main.context.drawImage(Images.alphabet, (this.value) * 15, (this.suit % 2) * 15, 15, 15, -25 + 3, -35 + 3, 15, 15);
+            Main.context.drawImage(Images.suits, (this.suit) * 17, 0, 17, 17, -25 + 29, -35 + 3, 17, 17);
+            Main.context.restore();
+        }
+        else {
+            Main.context.drawImage(Images.card, 0, 0, 50, 70, x, y, 50, 70);
+        }
     };
     Card.SUITS = ["Spade", "Heart", "Club", "Diamond"];
     Card.VALUES = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
@@ -145,10 +158,12 @@ var Images = (function () {
     Images.init = function () {
         Images.table = new Image();
         Images.table.src = "res/table.png";
-        Images.card_front = new Image();
-        Images.card_front.src = "res/card-front.png";
-        Images.card_back = new Image();
-        Images.card_back.src = "res/card-back.png";
+        Images.card = new Image();
+        Images.card.src = "res/card.png";
+        Images.alphabet = new Image();
+        Images.alphabet.src = "res/alphabet.png";
+        Images.suits = new Image();
+        Images.suits.src = "res/suits.png";
     };
     return Images;
 })();

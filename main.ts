@@ -44,7 +44,7 @@ class Main {
 
     static queueUpdates(numTicks: number) {
         for (var i = 0; i < numTicks; i++) {
-            Main.lastTick = Main.lastTick + Main.tickLength; // Now lastTick is this tick.
+            Main.lastTick += Main.tickLength; // Now lastTick is this tick.
             Main.update(Main.lastTick);
         }
     }
@@ -92,7 +92,7 @@ class Table {
     }
 
     render() {
-        Main.context.drawImage(Images.table, Main.SIZE.w / 2 - 360, Main.SIZE.h / 2 - 240);
+        Main.context.drawImage(Images.table, Main.SIZE.w / 2 - Images.table.width / 2, Main.SIZE.h / 2 - Images.table.height / 2);
         for (var p in this.players) {
             this.players[p].render();
         }
@@ -113,17 +113,20 @@ class Player {
         this.table = table;
         this.ai = ai;
         this.balance = balance;
-        this.cards = new Array<Card>(0);
-        for (var s = 0; s < Card.SUITS.length; s++) {
-            for (var v = 0; v < Card.VALUES.length; v++) {
-                this.cards.push(new Card(s, v));
-            }
-        }
+        // this.cards = new Array<Card>(0);
+        var deck = new Deck();
+        deck.shuffle();
+        this.cards = deck.cards;
+        // for (var s = 0; s < Card.SUITS.length; s++) {
+        //     for (var v = 0; v < Card.VALUES.length; v++) {
+        //         this.cards.push(new Card(s, v));
+        //     }
+        // }
     }
 
     render() {
         for (var c in this.cards) {
-            this.cards[c].render((c % 13) * 55 + 120, Math.floor(c / 13) * 80 + 150, !this.ai);
+            this.cards[c].render((c % 13) * 55 + 105, Math.floor(c / 13) * 80 + 125, (Main.lastRender/1000) % (Math.PI * 2), c % 2 == 0);
         }
     }
 
@@ -157,7 +160,7 @@ class Deck {
             rnd: number;
 
         for (i = 0; i < this.cards.length; i++) {
-            rnd = Math.random() * this.cards.length;
+            rnd = Math.floor(Math.random() * this.cards.length);
             tempCard = this.cards[rnd];
             this.cards[rnd] = this.cards[i];
             this.cards[i] = tempCard;
@@ -195,20 +198,25 @@ class Card {
         return this.value + " of " + this.suit + "s";
     }
 
-    render(x: number, y: number, front: boolean) {
-        if (front) {
-            Main.context.drawImage(Images.card, 50, 0, 50, 70, x, y, 50, 70);
-            Main.context.drawImage(Images.alphabet, (this.value) * 15, (this.suit % 2) * 15, 15, 15, x + 3, y + 3, 15, 15);
-            Main.context.drawImage(Images.suits, (this.suit) * 17, 0, 17, 17, x + 29, y + 3, 17, 17);
+    render(x: number, y: number, angle: number, face: boolean) {
+        var w = Card.SIZE.w / 2,
+            h = Card.SIZE.h / 2;
+        Main.context.save();
+        Main.context.translate(x + w, y + h);
+        Main.context.rotate(angle);
+        if (face) {
+            Main.context.drawImage(Images.card, 50, 0, 50, 70, -w, -h, 50, 70);
+            Main.context.drawImage(Images.alphabet, (this.value) * 17, (this.suit % 2) * 17, 17, 17, -w + 4, -h + 3, 17, 17);
+            Main.context.drawImage(Images.suits, (this.suit) * 19, 0, 19, 19, -w + 29, -h + 3, 19, 19);
             Main.context.save();
-            Main.context.translate(x + 25, y + 35);
             Main.context.rotate(Math.PI);
-            Main.context.drawImage(Images.alphabet, (this.value) * 15, (this.suit % 2) * 15, 15, 15, -25 + 3, -35 + 3, 15, 15);
-            Main.context.drawImage(Images.suits, (this.suit) * 17, 0, 17, 17, -25 + 29, -35 + 3, 17, 17);
+            Main.context.drawImage(Images.alphabet, (this.value) * 17, (this.suit % 2) * 17, 17, 17, -25 + 4, -35 + 3, 17, 17);
+            Main.context.drawImage(Images.suits, (this.suit) * 19, 0, 19, 19, -25 + 29, -35 + 3, 19, 19);
             Main.context.restore();
         } else {
-            Main.context.drawImage(Images.card, 0, 0, 50, 70, x, y, 50, 70);
+            Main.context.drawImage(Images.card, 0, 0, 50, 70, -w, -h, 50, 70);
         }
+        Main.context.restore();
     }
 
 }
